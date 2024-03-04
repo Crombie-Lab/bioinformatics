@@ -91,7 +91,7 @@ bar
 # lets see that x-axis rotated and get rid of the x-axis title
 bar2 <- bar +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-        axis.ticks.x = element_blank())
+        axis.title.x = element_blank())
 bar2
 
 #------------------------------------------------------------------------------#
