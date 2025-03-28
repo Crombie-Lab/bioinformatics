@@ -4,7 +4,7 @@ library(tidyverse)
 setwd(glue::glue("{dirname(rstudioapi::getActiveDocumentContext()$path)}/.."))
 
 #------------------------------------------------------------------------------#
-# RUN ONCE ONLY: Setup the required packages using the BiocManager package manager
+# SETUP - RUN ONCE ONLY: Setup the required packages using the BiocManager package manager
 #------------------------------------------------------------------------------#
 # install the BiocManager packge
 install.packages("BiocManager")
@@ -58,7 +58,7 @@ library(ggtree)
 library(tidytree)
 
 # use the read.tree function from treeio package
-unrooted_tree <- treeio::read.tree("data/raw/unrooted.raxml.bestTree")
+unrooted_tree <- treeio::read.tree("data/raw/unrooted.2.raxml.bestTree")
 
 # plot the tree using ggtree
 # The ggtree book is here: https://yulab-smu.top/treedata-book/
@@ -81,14 +81,22 @@ tidy_unrooted_tree <- tidytree::as_tibble(unrooted_tree) %>%
   dplyr::group_by(year) %>%
   dplyr::mutate(mrca_node = min(parent) + 1)
 
+# update the functions from tidytree package https://github.com/YuLab-SMU/enrichplot/issues/249
+nodeid.tbl_tree <- utils::getFromNamespace("nodeid.tbl_tree", "tidytree")
+rootnode.tbl_tree <- utils::getFromNamespace("rootnode.tbl_tree", "tidytree")
+offspring.tbl_tree <- utils::getFromNamespace("offspring.tbl_tree", "tidytree")
+offspring.tbl_tree_item <- utils::getFromNamespace(".offspring.tbl_tree_item", "tidytree")
+child.tbl_tree <- utils::getFromNamespace("child.tbl_tree", "tidytree")
+parent.tbl_tree <- utils::getFromNamespace("parent.tbl_tree", "tidytree")
+
 # We can use the mrca node from above to label clades. The 2002 isolate is single so
 # I can't label it the same way, but you get the idea
 unrooted_plot3 <- unrooted_plot2 +
-  geom_cladelab(node = 114, label = "76'77'", offset = 0.0001, fontsize = 3) +
-  geom_cladelab(node = 120, label = "95'", offset = 0.0002, fontsize = 3) +
-  geom_cladelab(node = 117, label = "94'\n96'", offset = -0.0002, fontsize = 3) +
-  geom_cladelab(node = 123, label = "07'08'", offset = 0.0001, fontsize = 3) +
-  geom_cladelab(node = 103, label = "14'", offset = 0.0003, fontsize = 3) 
+  geom_cladelab(node = 112, label = "76'77'", offset = 0.0001, fontsize = 3) +
+  geom_cladelab(node = 117, label = "95'", offset = 0.0002, fontsize = 3) +
+  geom_cladelab(node = 118, label = "94'\n96'", offset = -0.0002, fontsize = 3) +
+  geom_cladelab(node = 200, label = "07'08'", offset = 0.0001, fontsize = 3) +
+  geom_cladelab(node = 123, label = "14'", offset = 0.0003, fontsize = 3) 
 unrooted_plot3
 
 # save the tree plot
@@ -101,7 +109,7 @@ library(ggtree)
 library(tidytree)
 
 # use the read.tree function from treeio package
-rooted_2014_tree <- treeio::read.tree("data/raw/root2014.raxml.bestTree")
+rooted_2014_tree <- treeio::read.tree("data/raw/root2014.2.raxml.bestTree")
 
 # plot the tree using ggtree
 # The ggtree book is here: https://yulab-smu.top/treedata-book/
@@ -112,25 +120,33 @@ rooted_2014_plot
 
 # OK, let's read in the 1976 rooted tree, which is the rooting they choose.
 # use the read.tree function from treeio package
-rooted_1976_tree <- treeio::read.tree("data/raw/root1976.raxml.bestTree")
+rooted_1976_tree <- treeio::read.tree("data/raw/root1976.2.raxml.bestTree")
 # plot the tree using ggtree
 rooted_1976_plot <- ggtree::ggtree(rooted_1976_tree, layout = "rectangular")
+
+# look at the 1976 rooted tree nodes
+tidy_1976rooted_tree <- tidytree::as_tibble(rooted_1976_tree) %>%
+  tidyr::separate(label, into = c("virus", "year", "id"), remove = F) %>%
+  dplyr::filter(!is.na(virus)) %>%
+  dplyr::group_by(year) %>%
+  dplyr::mutate(mrca_node = min(parent) + 1)
+
   
 # lets try collapsing some of the 2014 sequences based on the internal node
 rooted_1976_plot2 <- ggtree::ggtree(rooted_1976_tree, layout = "rectangular") %>%
-  ggtree::collapse(node = 119) + # collapse some of the 2014 samples
+  ggtree::collapse(node = 117) + # 119 collapse some of the 2014 samples
   #geom_tiplab() +
   ggplot2::xlim(0, 0.06) + # get some extra space on the x-axis of the plot to not crop labels
   geom_treescale(x = 0.005, y = 27.5, width = 0.001, offset = 0.5) +  # add a scale bar with specific position
-  geom_strip("EBOV_2007_HQ613403", "EBOV_2007_KC242789", label = "DRC, 07'-08'",
+  geom_strip("EBOV_2007_KC242790", "EBOV_2007_HQ613403", label = "DRC, 07'-08'",
              offset.text= 0.001, fontsize = 3, color = "salmon") +
-  geom_strip("EBOV_2014_G3687", "EBOV_2014_KJ660347", label = "West Africa 14'",
+  geom_strip("EBOV_2014_G3680", "EBOV_2014_KJ660347", label = "West Africa 14'",
              offset.text= 0.001, fontsize = 3, color = "darkgreen") +
   geom_strip("EBOV_2002_KC242800", "EBOV_2002_KC242800", label = "Gabon, 02'",
              offset.text= 0.001, fontsize = 3, color = "orange") +
-  geom_strip("EBOV_1995_AY354458", "EBOV_1995_KC242796", label = "Zaire (DRC), 95'",
+  geom_strip("EBOV_1995_JQ352763", "EBOV_1995_KC242799", label = "Zaire (DRC), 95'",
              offset.text= 0.001, fontsize = 3, color = "powderblue") +
-  geom_strip("EBOV_1996_KC242793", "EBOV_1996_KC242794", label = "Gabon, 94'-96'",
+  geom_strip("EBOV_1994_KC242792", "EBOV_1996_KC242794", label = "Gabon, 94'-96'",
              offset.text= 0.001, fontsize = 3, color = "powderblue") +
   geom_strip("EBOV_1977_KC242791", "EBOV_1976_KC242801", label = "Zaire (DRC), 76'-77'",
              offset.text= 0.001, fontsize = 3, color = "royalblue")
@@ -139,7 +155,7 @@ rooted_1976_plot2 <- ggtree::ggtree(rooted_1976_tree, layout = "rectangular") %>
 rooted_1976_plot2
 
 # save the nice tree
-ggsave(plot = rooted_1976_plot2, filename = "plots/fig2C.png", width = 5, height = 5) 
+ggsave(plot = rooted_1976_plot2, filename = "plots/fig2C2.png", width = 5, height = 5) 
 
 #------------------------------------------------------------------------------#
 # Part 4: See if we can plot the correlations from root to tip for the trees
